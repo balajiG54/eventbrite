@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
+	<script src="https://www.eventbrite.com/static/widgets/eb_widgets.js"></script>
+	<script>
+	$(document).ready(function() {
+
+		var token = '7UJ63S6RAJZFUSFSUXFG';
+		var organizerid = '1061056997603';
+		var $events = $("#events");
+		
+		$events.html("<i>Loading events, please stand by...</i>");
+		$.get('https://www.eventbriteapi.com/v3/organizations/'+organizerid+'/events/?token='+token+'&expand=venue,original', function(res) {
+			if(res.events.length) {
+				var s = "";
+				for(var i=0;i<res.events.length;i++) {
+					var event = res.events[i];
+					var eventTime = moment(event.start.local).format('M/D/YYYY h:mm A');
+					// console.dir(event);
+					s += "<div class='eventList'>";
+					s += "<img class='featureImage' src='"+event.logo?.original.url+"'></img>"
+					s += "<h2><a href='" + event.url + "'>" + event.name.text + "</a></h2>";
+					s += "<p><b>Location: " + event.venue.address.city + "</b><br/>";
+					s += "<b>Date/Time: " + eventTime + "</b></p>";
+					
+					s += "<p>" + event.description.text + "</p>";
+					s += "<button id='example-widget-trigger-"+event.id+"' type='button'>Buy Tickets</button>"
+					s += "</div> <br><br>";
+				}
+				$events.html(s);
+			} else {
+				$events.html("<p>Sorry, there are no upcoming events.</p>");
+			}
+
+			
+
+    window.EBWidgets.createWidget({
+        widgetType: 'checkout',
+        eventId: event.id,
+        modal: true,
+        modalTriggerElementId: 'example-widget-trigger-'+event.id,
+        onOrderComplete: () => {
+			console.log('Success!');
+		},
+    });
+		});
+	});
+	</script>
+	<style>
+		.eventList{
+			width: 300px;
+		}
+		.featureImage{
+			width: 200px;
+		}
+		p{
+			word-break: break-all;
+		}
+	</style>
+</head>
+<body>
+    <h2>Upcoming Events!</h2>
+<div id="events"></div>
+</body>
+</html>
